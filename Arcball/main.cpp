@@ -8,9 +8,12 @@
 
 #include <iostream>
 
+#ifdef __APPLE__
 #include <OpenGL/gl3.h>
+#else
+#include <GL/glew.h>
+#endif
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -36,17 +39,11 @@ void mouseButtonCallback( GLFWwindow * window, int button, int action, int mods 
 void cursorCallback( GLFWwindow *window, double x, double y );
 
 int main(int argc, const char * argv[]) {
-    if( !glfwInit() ) {
+    if(!glfwInit()) {
         cerr << "Unable to initialize glfw" << endl;
         return false;
     }
-    
-    /* Tell GLFW to use OpenGL 4.1 */
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 1 );
-    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
-    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-    
+
     GLFWwindow * window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "Arcball", NULL, NULL );
     if ( !window ) {
         cerr << "Unable to create glfw window" << endl;
@@ -56,7 +53,19 @@ int main(int argc, const char * argv[]) {
     
     glfwMakeContextCurrent( window );
     glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
-    
+    glfwSetErrorCallback( errorCallback );
+    glfwSetScrollCallback( window, scrollCallback );
+    glfwSetKeyCallback( window, keyCallback );
+    glfwSetFramebufferSizeCallback( window, frameBufferSizeCallback );
+    glfwSetCursorPosCallback( window, cursorCallback );
+    glfwSetMouseButtonCallback( window, mouseButtonCallback );
+
+#ifndef __APPLE__
+    if (glewInit() != GLEW_OK) {
+      std::cerr << "could not initialize glew" << std::endl;
+      return false;
+    }
+#endif
     cout << "OpenGL Ver: " << glGetString( GL_VERSION ) << endl;
     
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -68,20 +77,12 @@ int main(int argc, const char * argv[]) {
     glFrontFace( GL_CCW );
     glEnable( GL_CULL_FACE );
     glCullFace( GL_BACK );
-    
-    /* Set the callback functions */
-    glfwSetErrorCallback( errorCallback );
-    glfwSetScrollCallback( window, scrollCallback );
-    glfwSetKeyCallback( window, keyCallback );
-    glfwSetFramebufferSizeCallback( window, frameBufferSizeCallback );
-    glfwSetCursorPosCallback( window, cursorCallback );
-    glfwSetMouseButtonCallback( window, mouseButtonCallback );
-    
+
     GLuint vertex_array_id;
     glGenVertexArrays( 1, &vertex_array_id );
     glBindVertexArray( vertex_array_id );
     
-    Shader shader( "simpleLighting.vsh", "simpleLighting.fsh" );
+    Shader shader( "./shaders/simpleLighting.vsh", "./shaders/simpleLighting.fsh" );
     GLuint cube_buffers[2];
     glGenBuffers( 2, cube_buffers );
     glBindBuffer( GL_ARRAY_BUFFER, cube_buffers[0] );
@@ -96,6 +97,7 @@ int main(int argc, const char * argv[]) {
     glBindBuffer( GL_ARRAY_BUFFER, floor_buffers[1] );
     glBufferData( GL_ARRAY_BUFFER, sizeof(glm::vec3) * floor_normals_data.size(), &floor_normals_data[0], GL_STATIC_DRAW );
 
+
     glm::mat4 model      = glm::mat4(1.0);
     glm::mat4 view       = glm::lookAt( glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0., 0., 0.), glm::vec3(0., 1., 0.) );
     glm::mat4 projection = glm::perspective(70.0f, 4.0f/3.0f, 0.1f, 100.0f );
@@ -104,6 +106,7 @@ int main(int argc, const char * argv[]) {
     
     shader.bind();
     shader.setUniform( "light_position_w", light_position );
+
     
     while( !glfwWindowShouldClose( window )){
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

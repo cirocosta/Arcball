@@ -10,9 +10,17 @@
 #define __glfwTutorial__Shader__
 
 #include <iostream>
+#include <iterator>
+#include <fstream>
+#include <sstream>
+#include <vector>
 #include <map>
 
+#ifdef __APPLE__
 #include <OpenGL/gl3.h>
+#else
+#include <GL/glew.h>
+#endif
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

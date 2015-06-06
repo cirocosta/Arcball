@@ -18,7 +18,6 @@
 std::string& rtrim( std::string& str );
 
 void print( glm::vec3 vector );
-
 void print( glm::mat4 matrix );
 void print( glm::mat3 matrix );
 

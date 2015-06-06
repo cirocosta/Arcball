@@ -8,9 +8,6 @@
 
 
 #include "Shader.h"
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include "Util.hpp"
 
 Shader::Shader() {
