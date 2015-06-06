@@ -20,5 +20,6 @@ lib.a: $(OBJECTS)
 .PHONY: clean
 
 clean:
-	find . -name "*.0" -delete &\ 
+	find . -name "*.o" -delete  
+	find . -name "*.a" -delete 
 	find . -name "main" -delete
